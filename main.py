@@ -1,112 +1,156 @@
-import flet as ft
+from flet import * 
+import flet 
+import datetime 
+import threading as th
 
-def main(page: ft.Page):
-    page.title = "ChefAI - Login"
+class Input(UserControl):
+
+    def __init__(self,hint_text,icon, password=False):
+        super().__init__(),
+        self.hint_text = hint_text
+        self.icon = icon
+        self.password = password
     
-    # Background container with image
-    background_container = ft.Container(
-        content=None,  # This will be replaced with login or register views
-        expand=True,
-        image_src="https://c1.wallpaperflare.com/preview/957/1003/725/kitchen-restaurant-restaurant-kitchen-cook.jpg",  # Replace with your image URL
-        image_fit=ft.ImageFit.COVER
+    def build(self):
+        return Container(
+            Row([
+                Icon(
+                    self.icon,
+                    color='white'
+                ),
+            TextField(
+                border='OUTLINE',
+                border_color='black',
+                color='white',
+                cursor_color='white',
+                height=40,
+                text_style=TextStyle(
+                    size=18,
+                    font_family='assets/fonts/Adequate-ExtraLight.ttf'
+                ),
+                password = self.password,
+                hint_text = self.hint_text,
+                hint_style=TextStyle(
+                    size=18,
+                    weight='w500',
+                    color='white'
+                )
+            )
+        ]), border=border.only(bottom=BorderSide(1, 'white'))
     )
 
-    # Function to show the login screen
-    def show_login(e=None):
-        background_container.content = login_view()  # Set the content to the login view
-        page.update()  # Update the page to reflect changes
+class Button(UserControl):
 
-    # Function to show the registration screen
-    def show_register(e=None):
-        background_container.content = register_view()  # Set the content to the registration view
-        page.update()  # Update the page to reflect changes
-
-    # Function to handle login button click
-    def login_click(e):
-        if username.value == "user" and password.value == "pass":  # Check if credentials are correct (hardcoded for now)
-            login_status.value = "Login successful!"  # Display success message
-            login_status.color = ft.colors.GREEN  # Set text color to green
-        else:
-            login_status.value = "Invalid username or password"  # Display error message
-            login_status.color = ft.colors.RED  # Set text color to red
-        page.update()  # Update the page to reflect changes
-
-    # Function to handle register button click
-    def register_click(e):
-        # Placeholder for registration logic
-        if reg_password.value == reg_confirm_password.value:  # Check if passwords match
-            register_status.value = "Registration successful!"  # Display success message
-            register_status.color = ft.colors.GREEN  # Set text color to green
-        else:
-            register_status.value = "Passwords do not match!"  # Display error message
-            register_status.color = ft.colors.RED  # Set text color to red
-        page.update()  # Update the page to reflect changes
-
-    # Function to create the login view
-    def login_view():
-        global username, password, login_status  # Declare global variables to store form fields and status message
-        
-        # Transparent grey background for text fields
-        textbox_bgcolor = ft.colors.with_opacity(ft.colors.GREY, 0.5)
-
-        username = ft.TextField(label="Username", width=300)  # Create a text field for username
-        password = ft.TextField(label="Password", password=True, width=300)  # Create a text field for password
-        login_button = ft.ElevatedButton(text="Login", on_click=login_click)  # Create a login button
-        login_status = ft.Text(value="", size=14)  # Create a text element to display the login status
-        register_link = ft.TextButton("Register", on_click=show_register)  # Create a link to switch to the registration screen
-
-        return ft.Container(
-            content=ft.Column(
-                [
-                    ft.Text("Login to ChefAI", size=32, weight="bold"),  # Header text
-                    ft.Container(content=username, bgcolor=textbox_bgcolor, border_radius=8),  # Username field with background
-                    ft.Container(content=password, bgcolor=textbox_bgcolor, border_radius=8),  # Password field with background
-                    login_button,  # Login button
-                    login_status,  # Login status message
-                    register_link  # Link to registration screen
-                ],
-                spacing=20,  # Spacing between elements
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER  # Center align elements horizontally
+    def __init__(self, text):
+        super().__init__()
+        self.text = text
+        self.btn = Container(
+            Text(
+                self.text,
+                color = 'white',
+                font_family='assets/fonts/Adequate-ExtraLight.ttf',
+                weight='w400'
             ),
-            alignment=ft.alignment.center,  # Center the container content
-            padding=ft.padding.all(20)  # Add some padding around the content
+            border=border.all(1, 'white'),
+            border_radius=3,
+            padding=padding.only(10,3,10,3),
+            alignment=alignment.center,
+            on_hover=self.Hover,
+            animate=animation.Animation(250),
+        )
+    
+    def Hover(self, e):
+        if self.btn.bgcolor == '540b6e65':
+            self.btn.bgcolor ='transparent'
+        else:
+            self.btn.bgcolor = '#540b6e65'
+        self.btn.update()
+
+    def build(self):
+        return self.btn
+    
+class TimeLine(UserControl):
+
+    def __init__(self):
+        super().__init__()
+        self.now = datetime.datetime.now()
+        self.date = self.now.strftime("%A, %B %d")
+        self.time = self.now.strftime("%H:%M")
+
+
+    def build(self):
+        return Container(
+            Column([
+                Text(
+                    self.date,
+                    color='white',
+                    size=20,
+                    font_family='assets/fonts/Adequate-ExtraLight.ttf',
+                )
+            ],alignment='center'),
+            width=300,
+            height=100,
         )
 
-    # Function to create the registration view
-    def register_view():
-        global reg_username, reg_password, reg_confirm_password, register_status  # Declare global variables to store form fields and status message
-
-        # Transparent grey background for text fields
-        textbox_bgcolor = ft.colors.with_opacity(ft.colors.GREY, 0.5)
-
-        reg_username = ft.TextField(label="Username", width=300)  # Create a text field for username
-        reg_password = ft.TextField(label="Password", password=True, width=300)  # Create a text field for password
-        reg_confirm_password = ft.TextField(label="Confirm Password", password=True, width=300)  # Create a text field for confirming the password
-        register_button = ft.ElevatedButton(text="Register", on_click=register_click)  # Create a register button
-        register_status = ft.Text(value="", size=14)  # Create a text element to display the registration status
-        login_link = ft.TextButton("Back to Login", on_click=show_login)  # Create a link to switch back to the login screen
-
-        return ft.Container(
-            content=ft.Column(
-                [
-                    ft.Text("Register for ChefAI", size=32, weight="bold"),  # Header text
-                    ft.Container(content=reg_username, bgcolor=textbox_bgcolor, border_radius=8),  # Username field with background
-                    ft.Container(content=reg_password, bgcolor=textbox_bgcolor, border_radius=8),  # Password field with background
-                    ft.Container(content=reg_confirm_password, bgcolor=textbox_bgcolor, border_radius=8),  # Confirm password field with background
-                    register_button,  # Register button
-                    register_status,  # Registration status message
-                    login_link  # Link to login screen
-                ],
-                spacing=20,  # Spacing between elements
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER  # Center align elements horizontally
+body = Container(
+    Stack([
+        Image(
+            src='kitch2.png',
+            width=360,
+            height=640,
+            top=0
+        ),
+        Container(
+            TimeLine(),
+            top=60,
+            width=300,
+            left=30,
+            height=80,
+            
+        ),
+        Container(
+            Text(
+                "Welcome to the Co-Cooking Experience",
+                font_family='assets/fonts/Adequate-ExtraLight.ttf',
+                size=18 
             ),
-            alignment=ft.alignment.center,  # Center the container content
-            padding=ft.padding.all(20)  # Add some padding around the content
+            top=170,
+            #width=300,
+            left=10,
+            height=30,
+
+        ),
+
+        Container(
+            Column([
+                Input("Username", icons.PERSON),
+                Input("Password", icons.PASSWORD, password=True),
+                Container(
+                    Row([
+                        Button("Sign Up"),
+                        Button("Sign in"),
+                    ], alignment='center', spacing=30)
+                )
+            ], alignment='30'),
+            width=260,
+            height=280,
+            top=400,
+            left=50,
+            # bgcolor='red',
         )
+    ]),
+    width=360,
+    height=640
+)
 
-    # Initially display the login view
-    show_login()
+def manage(page: Page):
+    page.window_width = 360
+    page.window_height = 640
+    page.window_max_width = 360
+    page.window_max_height = 640
+    page.padding = 0
+    page.add(
+        body
+    )
 
-    # Add the background and overlay containers to the page
-    page.add(background_container)
-ft.app(target=main)
+flet.app(target=manage)
